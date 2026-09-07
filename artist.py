@@ -7,6 +7,7 @@ import os
 from ytmusicapi import YTMusic
 
 from ytm_downloader.tracks import collect_tracks, get_all_releases
+from ytm_downloader.thumbnails import best_thumbnail
 
 INCLUDE_SINGLES = os.environ.get("INCLUDE_SINGLES", "false") == "true"
 
@@ -19,6 +20,7 @@ def fetch_artist_catalog(
 ) -> dict:
     artist = yt.get_artist(channel_id)
     artist_name = artist.get("name") or "Unknown Artist"
+    artist_thumbnail = best_thumbnail(artist.get("thumbnails"))
 
     albums_out = []
 
@@ -39,12 +41,19 @@ def fetch_artist_catalog(
                 singles_tracks.extend(single["tracks"])
 
         if singles_tracks:
-            albums_out.append({"title": "Singles", "tracks": singles_tracks})
+            albums_out.append(
+                {
+                    "title": "Singles",
+                    "thumbnail": singles_tracks[0].get("thumbnail"),
+                    "tracks": singles_tracks,
+                }
+            )
 
     return {
         "artist": artist_name,
         "mode": "artist",
         "sourceTitle": artist_name,
         "channelId": channel_id,
+        "thumbnail": artist_thumbnail,
         "albums": albums_out,
     }

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 log() {
-    printf '[%s] %s\n' "$(date '+%H:%M:%S')" "$*"
+    printf '[%s] %s\n' "$(date '+%H:%M:%S')" "$*" >&2
 }
 
 die() {

@@ -5,9 +5,9 @@ set -euo pipefail
 # YouTube Music downloader
 #
 # Automatically detects the URL type and downloads accordingly:
-#   - Artist channel  -> all studio albums
-#   - Playlist        -> entire playlist
-#   - Single video    -> one track
+#   - Artist channel / @handle -> all studio albums
+#   - Playlist                 -> entire playlist
+#   - Single video             -> one track
 #
 # Organizes files as: {artist}/{album}/{song_name}.mp3}
 #

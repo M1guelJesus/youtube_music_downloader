@@ -9,7 +9,7 @@ from ytmusicapi import YTMusic
 
 from ytm_downloader.artist import fetch_artist_catalog
 from ytm_downloader.playlist import fetch_playlist_catalog
-from ytm_downloader.url import detect_url_type
+from ytm_downloader.url import detect_url_type, resolve_artist_channel_id
 from ytm_downloader.video import fetch_video_catalog
 
 
@@ -21,7 +21,8 @@ def fetch_catalog(url: str) -> dict:
     seen_video_ids: set[str] = set()
 
     if url_type == "artist":
-        return fetch_artist_catalog(yt, resource_id, seen_songs, seen_video_ids)
+        channel_id = resolve_artist_channel_id(yt, resource_id)
+        return fetch_artist_catalog(yt, channel_id, seen_songs, seen_video_ids)
     if url_type == "playlist":
         return fetch_playlist_catalog(
             yt, resource_id, url, seen_songs, seen_video_ids

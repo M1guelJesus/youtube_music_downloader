@@ -58,8 +58,16 @@ def print_dry_run() -> None:
 def print_tracks() -> None:
     data = load_catalog()
     for album in data["albums"]:
+        album_thumb = album.get("thumbnail") or ""
         for track in album["tracks"]:
-            print(f"{album['title']}\t{track['videoId']}\t{track['cleanTitle']}")
+            thumb = track.get("thumbnail") or album_thumb or ""
+            print(
+                f"{album['title']}\t{track['videoId']}\t{track['cleanTitle']}\t{thumb}"
+            )
+
+
+def print_metadata() -> None:
+    print(json.dumps(load_catalog(), indent=2, ensure_ascii=False))
 
 
 def main() -> None:
@@ -81,6 +89,8 @@ def main() -> None:
         print_dry_run()
     elif command == "tracks":
         print_tracks()
+    elif command == "metadata":
+        print_metadata()
     else:
         print(f"Unknown command: {command}", file=sys.stderr)
         sys.exit(1)

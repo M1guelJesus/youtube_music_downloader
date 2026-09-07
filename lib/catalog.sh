@@ -31,6 +31,13 @@ print_catalog_dry_run() {
         python3 -m ytm_downloader.util dry-run
 }
 
+dump_catalog_metadata() {
+    local catalog="$1"
+
+    CATALOG_JSON="$catalog" PYTHONPATH="$SCRIPT_DIR" \
+        python3 -m ytm_downloader.util metadata
+}
+
 iter_catalog_tracks() {
     local catalog="$1"
 

@@ -24,16 +24,19 @@ UNWANTED_ALBUM_RE = re.compile(
     r"|\[\s*[^\]]*\bversion\b[^\]]*\])"
 )
 
+# Parenthetical / bracketed suffixes that are not part of the song name.
 UNWANTED_TITLE_PARTS = re.compile(
     r"(?i)\s*"
-    r"(\([^)]*(?:feat\.?|ft\.?|featuring|live|remix|remaster(?:ed)?|"
+    r"(\([^)]*(?:feat\.?|ft\.?|featuring|with\.?|w/|vs\.?|versus|"
+    r"live|remix|remaster(?:ed)?|"
     r"acoustic|version|visualizer|visualiser|lyric video|official video|"
     r"official audio|piano version|demo|session|performance|"
     r"radio edit|extended|deluxe|bonus track|instrumental|"
     r"pop mix|\bmix\b|soundtrack|from the vault|motion picture|"
     r"from \"[^\"]+\"|from '[^']+'|"
     r"clean|explicit)[^)]*\)"
-    r"|\[[^\]]*(?:feat\.?|ft\.?|featuring|live|remix|remaster(?:ed)?|"
+    r"|\[[^\]]*(?:feat\.?|ft\.?|featuring|with\.?|w/|vs\.?|versus|"
+    r"live|remix|remaster(?:ed)?|"
     r"acoustic|version|visualizer|visualiser|lyric video|official video|"
     r"official audio|piano version|demo|session|performance|"
     r"radio edit|extended|deluxe|bonus track|instrumental|"
@@ -42,9 +45,14 @@ UNWANTED_TITLE_PARTS = re.compile(
     r"clean|explicit)[^\]]*\])"
 )
 
-FEAT_PREFIX_RE = re.compile(
-    r"(?i)\s*(?:\(|\[)?"
-    r"(?:feat\.?|ft\.?|featuring)\s+[^)\]]+(?:\)|\])?"
+# Inline guest/other-artist credits: "feat.", "ft.", "with.", "w/", "vs.", etc.
+COLLAB_CREDIT_RE = re.compile(
+    r"(?i)\s*"
+    r"(?:"
+    r"[\(\[]\s*(?:feat\.?|ft\.?|featuring|with\.?|w/|vs\.?|versus)\b[^)\]]*[\)\]]"
+    r"|"
+    r"(?:feat\.?|ft\.?|featuring|with\.|w/|vs\.|versus)\s+.+$"
+    r")"
 )
 
 ARTIST_PREFIX_RE = re.compile(r"^[^-]+-\s+")
@@ -54,11 +62,11 @@ YOUTUBE_ID_SUFFIX_RE = re.compile(r"\s*\[[^\]]+\]$")
 def clean_song_title(title: str, artist_name: str) -> str:
     name = title.strip()
     name = YOUTUBE_ID_SUFFIX_RE.sub("", name)
-    name = FEAT_PREFIX_RE.sub("", name)
 
     previous = None
     while previous != name:
         previous = name
+        name = COLLAB_CREDIT_RE.sub("", name).strip()
         name = UNWANTED_TITLE_PARTS.sub("", name).strip()
 
     name = ARTIST_PREFIX_RE.sub("", name)

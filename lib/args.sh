@@ -6,6 +6,7 @@ Usage: $(basename "$0") [OPTIONS] URL
 
 Automatically detects the URL type:
   - Artist channel URL  -> downloads all studio albums
+  - Artist @handle URL  -> resolves handle, then downloads studio albums
   - Playlist URL        -> downloads the entire playlist
   - Single video URL    -> downloads that one track
 
@@ -18,13 +19,16 @@ Options:
     -q, --quality N         MP3 VBR quality 0-9, lower is better (default: 0)
     -s, --include-singles   Also download singles (saved under {artist}/Singles/)
     -n, --dry-run           List albums/tracks without downloading
+    -m, --metadata-only     Dump catalog metadata as JSON and exit
     -h, --help              Show this help
 
 Examples:
     $(basename "$0") "https://music.youtube.com/channel/UCqECaJ8Gagnn7YCbPEzWH6g"
+    $(basename "$0") "https://music.youtube.com/@WrittenByWolves"
     $(basename "$0") "https://music.youtube.com/playlist?list=OLAK5uy_..."
     $(basename "$0") "https://music.youtube.com/watch?v=dQw4w9WgXcQ"
     $(basename "$0") -s "https://music.youtube.com/channel/UCqECaJ8Gagnn7YCbPEzWH6g"
+    $(basename "$0") -m "https://music.youtube.com/@WrittenByWolves" > catalog.json
     $(basename "$0") -c cookies.txt -o ~/Music "https://music.youtube.com/watch?v=..."
 EOF
 }
@@ -58,6 +62,9 @@ parse_args() {
                 ;;
             -n|--dry-run)
                 DRY_RUN=true
+                ;;
+            -m|--metadata-only)
+                DUMP_METADATA=true
                 ;;
             -s|--include-singles)
                 INCLUDE_SINGLES=true

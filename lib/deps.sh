@@ -2,7 +2,7 @@
 
 check_dependencies() {
     local missing=()
-    for cmd in yt-dlp ffmpeg python3; do
+    for cmd in yt-dlp ffmpeg python3 curl; do
         command -v "$cmd" >/dev/null 2>&1 || missing+=("$cmd")
     done
 

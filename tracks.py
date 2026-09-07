@@ -11,6 +11,7 @@ from ytm_downloader.filters import (
     is_unwanted_album,
     normalize_for_dedup,
 )
+from ytm_downloader.thumbnails import best_thumbnail, resolve_track_thumbnail
 
 
 def build_track_entry(
@@ -19,6 +20,9 @@ def build_track_entry(
     artist_name: str,
     seen_songs: set[str],
     seen_video_ids: set[str],
+    thumbnail: str | None = None,
+    track_thumbnails: list[dict] | None = None,
+    album_thumbnail: str | None = None,
 ) -> dict | None:
     if not video_id or video_id in seen_video_ids:
         return None
@@ -30,11 +34,17 @@ def build_track_entry(
 
     seen_songs.add(dedup_key)
     seen_video_ids.add(video_id)
+
+    resolved_thumbnail = thumbnail or resolve_track_thumbnail(
+        video_id, track_thumbnails, album_thumbnail
+    )
+
     return {
         "videoId": video_id,
         "rawTitle": raw_title,
         "cleanTitle": clean_title,
         "dedupKey": dedup_key,
+        "thumbnail": resolved_thumbnail,
     }
 
 
@@ -80,6 +90,10 @@ def collect_tracks(
         print(f"Skipping release '{release_title}': {exc}", file=sys.stderr)
         return None
 
+    album_thumbnail = best_thumbnail(release.get("thumbnails")) or best_thumbnail(
+        release_meta.get("thumbnails")
+    )
+
     tracks_out = []
     for track in release.get("tracks") or []:
         video_id = track.get("videoId")
@@ -106,6 +120,9 @@ def collect_tracks(
                 "rawTitle": raw_title,
                 "cleanTitle": clean_title,
                 "dedupKey": dedup_key,
+                "thumbnail": resolve_track_thumbnail(
+                    video_id, track.get("thumbnails"), album_thumbnail
+                ),
             }
         )
 
@@ -114,5 +131,6 @@ def collect_tracks(
 
     return {
         "title": album_folder or release.get("title") or release_title,
+        "thumbnail": album_thumbnail,
         "tracks": tracks_out,
     }

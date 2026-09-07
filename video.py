@@ -8,6 +8,7 @@ import subprocess
 from ytmusicapi import YTMusic
 
 from ytm_downloader.tracks import build_track_entry
+from ytm_downloader.thumbnails import best_thumbnail, resolve_track_thumbnail
 from ytm_downloader.url import strip_topic_suffix
 from ytm_downloader.ytdlp import ytdlp_cmd
 
@@ -21,12 +22,24 @@ def fetch_video_catalog(
 ) -> dict:
     artist_name = "Unknown Artist"
     raw_title = "Unknown Track"
+    thumbnail = None
 
     try:
         song = yt.get_song(video_id)
         video_details = song.get("videoDetails") or {}
         raw_title = video_details.get("title") or raw_title
         artist_name = strip_topic_suffix(video_details.get("author") or artist_name)
+        thumbnail = best_thumbnail(
+            (video_details.get("thumbnail") or {}).get("thumbnails")
+        )
+        if not thumbnail:
+            micro = (
+                (song.get("microformat") or {})
+                .get("microformatDataRenderer", {})
+                .get("thumbnail", {})
+                .get("thumbnails")
+            )
+            thumbnail = best_thumbnail(micro)
     except Exception:
         cmd = ytdlp_cmd("-j", "--no-playlist", url)
         result = subprocess.run(cmd, capture_output=True, text=True, check=False)
@@ -37,9 +50,19 @@ def fetch_video_catalog(
         artist_name = strip_topic_suffix(
             entry.get("artist") or entry.get("uploader") or artist_name
         )
+        thumbs = entry.get("thumbnails")
+        if isinstance(thumbs, list):
+            thumbnail = best_thumbnail(thumbs)
+
+    thumbnail = thumbnail or resolve_track_thumbnail(video_id)
 
     track = build_track_entry(
-        video_id, raw_title, artist_name, seen_songs, seen_video_ids
+        video_id,
+        raw_title,
+        artist_name,
+        seen_songs,
+        seen_video_ids,
+        thumbnail=thumbnail,
     )
     if not track:
         raise ValueError(f"Could not process video: {video_id}")
@@ -48,5 +71,12 @@ def fetch_video_catalog(
         "artist": artist_name,
         "mode": "video",
         "sourceTitle": track["cleanTitle"],
-        "albums": [{"title": "Singles", "tracks": [track]}],
+        "thumbnail": thumbnail,
+        "albums": [
+            {
+                "title": "Singles",
+                "thumbnail": thumbnail,
+                "tracks": [track],
+            }
+        ],
     }

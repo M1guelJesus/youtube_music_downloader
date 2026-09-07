@@ -1,1 +1,52 @@
+# Secrets / auth
 cookies*
+*.cookies
+.env
+.env.*
+
+# Downloaded music and temp files
+downloads/
+.download_archive.txt
+*.download_archive.txt
+.tmp/
+**/cover.jpg
+
+# Local metadata dumps
+catalog.json
+*.catalog.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Media leftovers
+*.webm
+*.m4a
+*.opus
+*.part
+*.ytdl
+*.temp.mp3
+*.meta.tmp.mp3
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.code-workspace
+
+# Logs
+*.log

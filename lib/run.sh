@@ -5,11 +5,18 @@ run_downloader() {
     check_dependencies
     detect_cookies
 
-    mkdir -p "$OUTPUT_DIR"
+    if [[ "$DUMP_METADATA" != true ]]; then
+        mkdir -p "$OUTPUT_DIR"
+        log "Fetching catalog..."
+    fi
 
-    log "Fetching catalog..."
     local catalog
     catalog="$(fetch_catalog "$INPUT_URL")" || die "Failed to fetch catalog"
+
+    if [[ "$DUMP_METADATA" == true ]]; then
+        dump_catalog_metadata "$catalog"
+        exit 0
+    fi
 
     local artist_name
     artist_name="$(catalog_field "$catalog" artist)"
@@ -33,11 +40,17 @@ run_downloader() {
     while IFS= read -r line; do
         [[ -n "$line" ]] || continue
 
-        local album_title video_id clean_title
+        local album_title video_id clean_title thumbnail_url
         album_title="${line%%$'\t'*}"
         local rest="${line#*$'\t'}"
         video_id="${rest%%$'\t'*}"
-        clean_title="${rest#*$'\t'}"
+        rest="${rest#*$'\t'}"
+        clean_title="${rest%%$'\t'*}"
+        if [[ "$rest" == *$'\t'* ]]; then
+            thumbnail_url="${rest#*$'\t'}"
+        else
+            thumbnail_url=""
+        fi
 
         album_title="$(sanitize_path "$album_title")"
         clean_title="$(sanitize_path "$clean_title")"
@@ -57,7 +70,15 @@ run_downloader() {
             continue
         fi
 
-        if download_track "$video_id" "$dest_file" "$tmp_dir"; then
+        if download_track \
+            "$video_id" \
+            "$dest_file" \
+            "$tmp_dir" \
+            "$artist_name" \
+            "$album_title" \
+            "$clean_title" \
+            "$thumbnail_url"
+        then
             mark_archived "$video_id"
             ((downloaded++)) || true
             log "Saved: $dest_file"
