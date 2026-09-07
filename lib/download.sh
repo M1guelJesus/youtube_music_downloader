@@ -19,19 +19,19 @@ download_track() {
 
     log "Downloading: $video_id"
 
-    # Prefer android: it usually exposes a real audio stream without PO tokens.
-    # Cookies force web clients and often leave only image formats.
-    if ! _yt_dlp_download "$watch_url" "$output_template" \
-        "youtube:player_client=android" ""
-    then
-        if [[ -n "$COOKIES_FILE" ]]; then
-            log "Retrying with cookies..."
-            if ! _yt_dlp_download "$watch_url" "$output_template" \
-                "youtube:player_client=tv,web" "$COOKIES_FILE"
-            then
-                return 1
-            fi
-        else
+    # Prefer authenticated clients when cookies are available. Android without
+    # cookies often hits SABR / bot checks on current YouTube.
+    if [[ -n "$COOKIES_FILE" || -n "$COOKIES_FROM_BROWSER" ]]; then
+        if ! _yt_dlp_download "$watch_url" "$output_template" \
+            "youtube:player_client=web_safari,tv,web"
+        then
+            return 1
+        fi
+    else
+        if ! _yt_dlp_download "$watch_url" "$output_template" \
+            "youtube:player_client=android,tv,web_safari"
+        then
+            log "Download failed without cookies. Re-run with --cookies-from-browser firefox"
             return 1
         fi
     fi
@@ -71,7 +71,6 @@ _yt_dlp_download() {
     local url="$1"
     local output_template="$2"
     local extractor_args="$3"
-    local cookies="$4"
 
     local yt_dlp_args=(
         yt-dlp
@@ -83,6 +82,10 @@ _yt_dlp_download() {
         10
         --fragment-retries
         10
+        --js-runtimes
+        "$YTDLP_JS_RUNTIME"
+        --remote-components
+        ejs:github
         -f
         "bestaudio/best"
         --extractor-args
@@ -91,8 +94,10 @@ _yt_dlp_download() {
         "$output_template"
     )
 
-    if [[ -n "$cookies" ]]; then
-        yt_dlp_args+=(--cookies "$cookies")
+    if [[ -n "$COOKIES_FROM_BROWSER" ]]; then
+        yt_dlp_args+=(--cookies-from-browser "$COOKIES_FROM_BROWSER")
+    elif [[ -n "$COOKIES_FILE" ]]; then
+        yt_dlp_args+=(--cookies "$COOKIES_FILE")
     fi
 
     yt_dlp_args+=("$url")

@@ -15,6 +15,10 @@ Files are saved as: {artist}/{album}/{song_name}.mp3}
 Options:
     -o, --output-dir DIR    Output directory (default: ./downloads)
     -c, --cookies FILE      Cookies file for yt-dlp (auto-detected if omitted)
+        --cookies-from-browser BROWSER
+                            Load YouTube cookies from a browser profile
+                            (e.g. firefox, chrome). Preferred over a stale
+                            cookies export when YouTube asks you to sign in.
     -a, --archive FILE      Download archive file (default: .download_archive.txt)
     -q, --quality N         MP3 VBR quality 0-9, lower is better (default: 0)
     -s, --include-singles   Also download singles (saved under {artist}/Singles/)
@@ -48,6 +52,11 @@ parse_args() {
             -c|--cookies)
                 [[ $# -ge 2 ]] || die "--cookies requires a value"
                 COOKIES_FILE="$2"
+                shift
+                ;;
+            --cookies-from-browser)
+                [[ $# -ge 2 ]] || die "--cookies-from-browser requires a value"
+                COOKIES_FROM_BROWSER="$2"
                 shift
                 ;;
             -a|--archive)

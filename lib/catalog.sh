@@ -3,7 +3,10 @@
 fetch_catalog() {
     local url="$1"
 
-    INCLUDE_SINGLES="$INCLUDE_SINGLES" COOKIES_FILE="$COOKIES_FILE" \
+    INCLUDE_SINGLES="$INCLUDE_SINGLES" \
+        COOKIES_FILE="$COOKIES_FILE" \
+        COOKIES_FROM_BROWSER="$COOKIES_FROM_BROWSER" \
+        YTDLP_JS_RUNTIME="$YTDLP_JS_RUNTIME" \
         PYTHONPATH="$SCRIPT_DIR" python3 -m ytm_downloader "$url"
 }
 
