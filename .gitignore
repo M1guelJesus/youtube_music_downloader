@@ -1,6 +1,5 @@
 # Secrets / auth
-cookies*
-*.cookies
+*cookies*
 .env
 .env.*
 

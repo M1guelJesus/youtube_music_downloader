@@ -12,11 +12,10 @@ def ytdlp_cmd(*args: str) -> list[str]:
     if js_runtime:
         cmd.extend(["--js-runtimes", js_runtime, "--remote-components", "ejs:github"])
 
-    cookies_browser = os.environ.get("COOKIES_FROM_BROWSER", "")
+    # Browser cookies are extracted once into COOKIES_FILE when needed.
+    cookies_enabled = os.environ.get("COOKIES_ENABLED", "false") == "true"
     cookies = os.environ.get("COOKIES_FILE", "")
-    if cookies_browser:
-        cmd.extend(["--cookies-from-browser", cookies_browser])
-    elif cookies:
+    if cookies_enabled and cookies:
         cmd.extend(["--cookies", cookies])
 
     cmd.extend(args)

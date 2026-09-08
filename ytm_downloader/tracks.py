@@ -10,6 +10,7 @@ from ytm_downloader.filters import (
     clean_song_title,
     is_unwanted_album,
     normalize_for_dedup,
+    prefer_standard_editions,
 )
 from ytm_downloader.thumbnails import best_thumbnail, resolve_track_thumbnail
 
@@ -65,7 +66,7 @@ def get_all_releases(yt: YTMusic, artist: dict, section_key: str) -> list[dict]:
             continue
         seen_ids.add(release_browse_id)
         deduped.append(release)
-    return deduped
+    return prefer_standard_editions(deduped)
 
 
 def collect_tracks(
